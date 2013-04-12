@@ -1,0 +1,212 @@
+
+body, html{
+	height: 100% ;
+}
+
+body{
+	margin: auto;
+	overflow: auto;
+	background-color: #e3e3e3;
+	font-family:  Verdana,"Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	color: #555555;
+}
+
+
+.option{
+	cursor: pointer;
+}
+
+#logo{
+	float: left;
+	color: white;
+	font-size: 1.5em;
+	text-decoration: none;
+	text-align: center;
+	line-height: 35px;
+	vertical-align: middle;
+}
+
+#wrapper{ 
+	min-height: 100%;
+	height: auto ! important;
+	width: 960px;
+	margin: 50px auto auto auto;
+	text-align: left;
+	background-color: transparent;
+	overflow: hidden;
+}
+
+#header{
+	width: 100%;
+	box-shadow: 0px 1px 5px rgba(120,120,120,0.3);	
+	background-color: rgb(89, 163, 95);
+}
+
+#header-wrapper{ 
+	width: 960px;
+	height: 35px;
+	margin:0px auto;	
+}
+
+/*** Header Nav Bar ***/
+ul.nav{
+	list-style-type: none;
+	float: right;
+	margin: 0px;
+	height: 35px;
+}
+li.nav > a{
+	color: white;
+}
+li.nav{
+	color: white;
+	display: inline-block;
+	height: 35px;
+	line-height: 35px;
+	vertical-align: middle;
+	text-align: center;
+	padding: 0px 5px 0px 5px;
+}
+
+li.nav:hover{
+	text-shadow: 0px 0px 1px;
+	text-decoration: none;
+	box-shadow: 0px 0px 28px 0px rgba(78, 78, 78, 0.2) inset;
+}
+
+
+.primary{
+	width: 100%;
+	height:  auto;
+	background-color: #FFFFFF;
+	border-radius: 8px;
+	padding: 0px 0px 100px 0px;
+	overflow: auto;
+}
+
+
+div.domainDetail{
+	padding-top: 20px;
+	float: right;
+}
+
+.domainItemWrapper{
+	width: 880px;
+	margin: 0px 40px;
+	height: 35px;
+	float: left;
+	padding: 5px 5px 5px 10px;
+	box-shadow: 1px 1px 5px rgba(120,120,120,0.3) inset;
+}
+
+
+.flatBtn{
+	margin: 0px 5px 0px 5px;
+	padding: 0px 5px 0px 5px;
+	width: auto;
+	min-width: 55px;
+	margin-left: 0px;
+	border-radius:4px;
+	float:left;
+	height: 26px;
+	line-height: 26px;
+	color: white;
+	background-color: rgb(89, 163, 95);
+	vertical-align: middle;
+	text-align: center;
+}
+.flatBtn:active{
+	box-shadow: 0px 1.5px 1.5px rgba(0, 0, 0, 0.7) inset
+}
+/***********/
+
+#loginBox{
+	padding: 30px;
+	min-height: 200px;
+	height: auto;
+	width: 350px;
+	background-color: #FFFFFF;
+	border-radius: 10px;
+	margin: 100px auto 0px auto;	
+	overflow: auto;
+}
+
+
+.inputBox{
+	padding: 2px;
+	border: 1px solid silver;
+	border-radius: 5px;
+	height: 30px;
+	float: left;
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+
+/*******/
+
+div.checkbox{
+	width: 20px;
+	float: left;
+	height: 35px;
+	line-height: 35px;
+	text-align: center;
+	vertical-align: middle;
+	margin-right: 5px;
+}
+
+div.domainName, div.domainGrade{
+	width: 200px;
+	float: left;
+	text-align: left;
+}
+
+div.domainGrade{
+	width:80px;
+}
+span.domainGrade{
+	border-radius: 5px;
+	width: auto;
+	background-color: rgb(89, 163, 95);
+	padding: 4px;
+	color: white;
+}
+
+.ver-middle{
+	height: 35px;
+	line-height: 35px;
+	vertical-align: middle
+}
+
+div.updateTime{
+	color:rgb(185, 183, 183);
+}
+
+
+#panel{
+	float: left;
+	width: 880px;
+	margin: 20px 40px 20px 20px;
+	padding-left: 5px;
+}
+
+.disabled{
+	color: rgb(211, 211, 211);
+}
+
+#selectedFileName{
+	position: inherit;
+}
+
+#footer{ /* contains #footer-wrapper  */
+	height: 50px;
+	background-color: white;
+	color: #868686;
+}
+#footer-wrapper{ /* wrap footer content */
+	width: 960px;
+	height: 50px;
+	margin: 0px auto;
+	background-color: transparent;
+}

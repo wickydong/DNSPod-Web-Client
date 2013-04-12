@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>DNSPod 备份助手</title>
+	<link rel="stylesheet" type="text/css" href="static/css/anran.css" />
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	
+</head>
+
+<body>
+	<div id="header">
+		<div id="header-wrapper">
+			<span id="logo" href="/">DNSPod 备份助手</span>
+			  <ul class="nav">
+				<li class="nav">{{ email }}</li>
+				<li class="nav"><a href="/logout" style="text-decoration:none">安全离开</a></li>
+			  </ul>
+		</div>
+	</div>
+	
+	<div id="wrapper">
+		<div class="primary">
+		<div id="panel">
+			<div class="checkbox" style="width:100px"><input type="checkbox" name="checkAll" />全选</div>
+			<div class="option flatBtn exportBtn">导出</div>
+			<div class="option flatBtn ImportBtn">导入</div>
+			<span id="selectedFileName" style="line-height:26px;verticle-align:middle;"></span>
+			<form method="post" action="/export" style="visibility:hidden" enctype="multipart/form-data">
+				<input type="file" name="backup">
+				<input type="submit" name="backupSubmit" value="submit">
+			</form> 
+			<!-- 
+			<a href="/export" class="option download" style="text-decoration: none;">
+				<div class="exportBtn">导出</div>
+			</a>
+		-->
+		</div>
+		{% for domain in resp['domains'] %}
+		<div class="domainItemWrapper">
+			<div class="checkbox"><input type="checkbox" name="domain" value="{{ domain['id'] }}"></div>
+			<div class="domainName ver-middle" title="{{ domain['name'] }}">{{ domain['name'] }}</div>
+			{% if domain['grade'] == "D_Free" %}
+			<div class="domainGrade ver-middle"><span class="domainGrade">免费套餐</span></div>
+			{% end %}
+			<div class="updateTime ver-middle" style="float:right" title="最后更新时间">{{ domain['updated_on']  }}</div>
+			
+		</div><!-- End of domainItemWrapper -->
+		{% end %}
+		
+		</div>
+	</div><!-- end of wrapper -->
+</body>
+<script>
+	$( "input[name=checkAll]" ).click(function(){
+		var n = $("input[name=domain]").length;
+		for (i = 0; i < n; i++){
+			if($("input[name=checkAll]").prop("checked") == true){
+				$("input[name=domain]")[i].checked = true ;
+			}else{
+				$("input[name=domain]")[i].checked = false ;
+			}
+		}
+
+	});
+
+	$("input[name=domain]").click(function(){
+		if($(this).prop("checked") == false && $("input[name=checkAll]").prop("checked") == true){
+			$("input[name=checkAll]").attr("checked", false);
+		}
+	});
+
+	$("div.exportBtn").click(function(e){
+		var ids = [];
+		$( "input[name=domain]:checked" ).each(function(){
+			ids.push($(this).prop("value"));
+		});
+		if(ids.length > 0){
+			window.open("/export?id="+ ids.join("&id="));	
+		}
+	});
+
+	$("div.ImportBtn").click(function(){
+		$("input[name=backup]").trigger("click");
+		$("input[name=backup]").change(function(e){
+		$("#selectedFileName").append($("input[name=backup]").val().replace(/C:\\fakepath\\/i, ''));
+		$("#selectedFileName").after("<div class='option flatBtn SubmitBtn' onclick=SubmitBtnClick()>提交</div>");
+		});
+	});
+
+	var SubmitBtnClick = function(){
+		$("input[name=backupSubmit]").trigger("click");
+	}
+
+</script>
+
+<div id="footer">
+    <div id="footer-wrapper">
+    </div>
+</div>
+
+</body>
+</html>

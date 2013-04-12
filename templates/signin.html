@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Login</title>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="/static/anran.css" />
+	</head>
+
+<body>
+	<div id="loginBox">
+		<form method="post" action="/login">
+		<h3 class="caption">使用&nbsp;DNSPod&nbsp;账户登录</h3>
+		<p class="errorMsg" style="color:red;margin:10px;">{{ error }}</p>
+		<input class="inputBox" id="loginEmail" name="email" type="email" placeholder="邮箱">
+		<input class="inputBox" id="loginPwd" name="password" type="password" placeholder="密码">
+		<input type="submit" value="submit" style="visibility: hidden">
+		<span class="flatBtn option inputSubmitBtn">提交</span>
+		</form>
+	</div>
+</body>
+<script>
+	$(document).ready(function(){
+		$("span.inputSubmitBtn").click(function(){
+			$("input[type=submit]").trigger("click");
+		})
+	});
+</script>
+</html>
