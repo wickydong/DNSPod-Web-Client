@@ -101,7 +101,6 @@ class ExportHandler(BaseHandler):
         # First: Delete current records
         for domain in chunk:
             record_list = self.RecordList({"domain_id": domain['id']})
-            print "In POST\n",record_list['records'],"\n"
             for r in record_list['records']:
                 self.RecordRemove(dict(
                     domain_id = domain['id'],
