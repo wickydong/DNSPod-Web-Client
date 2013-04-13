@@ -9,8 +9,6 @@ import logging
 import tornado.web
 import requests
 
-from api import DNSPodAPI
-
 db = pymongo.Connection()['dnspod']
 
 class BaseHandler(tornado.web.RequestHandler):
