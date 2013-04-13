@@ -26,15 +26,11 @@
 			<div class="option flatBtn exportBtn">导出</div>
 			<div class="option flatBtn ImportBtn">导入</div>
 			<span id="selectedFileName" style="line-height:26px;verticle-align:middle;"></span>
-			<form method="post" action="/export" style="visibility:hidden" enctype="multipart/form-data">
-				<input type="file" name="backup">
-				<input type="submit" name="backupSubmit" value="submit">
+			<form style="display:none" enctype="multipart/form-data">
+				<input type="file" name="backup" accept="application/json" />
+				<input type="submit" name="backupSubmitBtn" value="submit" />
 			</form> 
-			<!-- 
-			<a href="/export" class="option download" style="text-decoration: none;">
-				<div class="exportBtn">导出</div>
-			</a>
-		-->
+
 		</div>
 		{% for domain in resp['domains'] %}
 		<div class="domainItemWrapper">
@@ -61,7 +57,6 @@
 				$("input[name=domain]")[i].checked = false ;
 			}
 		}
-
 	});
 
 	$("input[name=domain]").click(function(){
@@ -70,27 +65,59 @@
 		}
 	});
 
-	$("div.exportBtn").click(function(e){
+	$("div.exportBtn").click(function(){
 		var ids = [];
 		$( "input[name=domain]:checked" ).each(function(){
 			ids.push($(this).prop("value"));
 		});
 		if(ids.length > 0){
 			window.open("/export?id="+ ids.join("&id="));	
+		}else{
+			$("#selectedFileName").html("没有选择任何域名");
+			setTimeout(function(){$("#selectedFileName").empty()}, 2000);
 		}
 	});
 
 	$("div.ImportBtn").click(function(){
 		$("input[name=backup]").trigger("click");
-		$("input[name=backup]").change(function(e){
-		$("#selectedFileName").append($("input[name=backup]").val().replace(/C:\\fakepath\\/i, ''));
-		$("#selectedFileName").after("<div class='option flatBtn SubmitBtn' onclick=SubmitBtnClick()>提交</div>");
-		});
+	});
+	
+	$("input[name=backup]").change(function(){
+		$("#formFakeSubmitBtn1").remove();
+		var file = this.files[0];
+		var ext = file.name.split(".").pop().toLowerCase();
+    	if(ext == "json"){
+			$("#selectedFileName").html($("input[name=backup]").val().replace(/C:\\fakepath\\/i, ''));
+			$("#selectedFileName").after("<div class='option flatBtn' id='formFakeSubmitBtn1' onclick=SubmitBtnClick()>提交</div>");
+    	}else{
+    		$("#selectedFileName").html("文件格式不正确");
+    		setTimeout(function(){$("#selectedFileName").empty()}, 3000);
+    		
+    	}
 	});
 
-	var SubmitBtnClick = function(){
-		$("input[name=backupSubmit]").trigger("click");
-	}
+	function SubmitBtnClick(){
+		$("#selectedFileName").empty();
+		var formData = new FormData($('form')[0]);
+		$.ajax({
+			url: "/export",
+	        type: 'POST',
+	        enctype: 'multipart/form-data',
+	        data : formData,
+	        cache: false,
+        	contentType: false,
+        	processData: false,
+        	success: function(){
+        		location.reload();
+        	}
+		})
+		//setTimeout(function(){
+		//	$("#formFakeSubmitBtn1").fadeOut(600, function(){ $(this).remove(); })
+		//}, 2000);
+		$("#formFakeSubmitBtn1").fadeOut(200, function(){ $(this).remove(); })
+		$("#selectedFileName").css({"color": "gray", "font-size":"0.8em"});
+		$("#selectedFileName").html("文件已上传到服务器，正在处理中。。Don't worry, Everything's gonna be okay");
+	};
 
 </script>
 

@@ -210,3 +210,10 @@ div.updateTime{
 	margin: 0px auto;
 	background-color: transparent;
 }
+
+progress {  
+    background-color: #f3f3f3;  
+    border: 0;  
+    height: 18px;  
+    border-radius: 9px;  
+} 

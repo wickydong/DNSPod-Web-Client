@@ -7,31 +7,73 @@ import pymongo
 import StringIO
 import logging
 import tornado.web
+import requests
 
 from api import DNSPodAPI
 
 db = pymongo.Connection()['dnspod']
 
 class BaseHandler(tornado.web.RequestHandler):
+    def initialize(self):
+        self.data = dict(
+            format = "json",
+            lang = "cn",
+            error_on_empty = "no",
+        )
+        self.requests = requests.Session()
+        self.requests.headers['User-Agent'] = "Anran ClientToy/1.0.0 (qar@outlook.com)"
+
     def get_current_user(self):
         user = db.user.find_one({"session": self.get_cookie("session")})
         if user:
-            return (user['email'], user['password'])
+            return {"login_email": user['email'], "login_password": user['password']}
         else:
             return None
 
-    @property
-    def DAPI(self):
-        client = self.get_current_user()
-        return DNSPodAPI(client[0], client[1])
+    ## DNSPod API
+    def UserDetail(self, auth):
+        self.data.update(auth)
+        r = self.requests.post("https://dnsapi.cn/User.Detail", data=self.data)
+        return r.json()
+
+    def DomainInfo(self, kwargs):
+        self.data.update(self.get_current_user())
+        self.data.update(kwargs)
+        r = self.requests.post("https://dnsapi.cn/Domain.Info", data=self.data)
+        return r.json()
+
+    def DomainList(self):
+        self.data.update(self.get_current_user())
+        r = self.requests.post("https://dnsapi.cn/Domain.List", data=self.data)
+        return r.json()
+
+    def RecordList(self, kwargs):
+        self.data.update(self.get_current_user())
+        self.data.update(kwargs)
+        r = self.requests.post("https://dnsapi.cn/Record.List", data=self.data)
+        return r.json()
+
+    def RecordRemove(self, kwargs):
+        self.data.update(self.get_current_user())
+        self.data.update(kwargs)
+        r = self.requests.post("https://dnsapi.cn/Record.Remove", data=self.data)
+        return r.json()    
+
+    @tornado.web.asynchronous
+    def RecordCreate(self, kwargs):
+        self.data.update(self.get_current_user())
+        self.data.update(kwargs)
+        r = self.requests.post("https://dnsapi.cn/Record.Create", data=self.data)
+        return r.json()
+
 
 
 class IndexHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         member = self.get_current_user()
-        resp = self.DAPI.DomainList()
-        self.render("index.html", resp=resp, email=member[0])
+        resp = self.DomainList()
+        self.render("index.html", resp=resp, email=member['login_email'])
 
 
 class ExportHandler(BaseHandler):
@@ -40,53 +82,65 @@ class ExportHandler(BaseHandler):
         domain_ids= self.get_arguments("id", None)
         chunks = []
         for domain_id in domain_ids:
-            domain_info = self.DAPI.DomainInfo({"domain_id": domain_id})
-            record_list = self.DAPI.RecordList(domain_id)
+            domain_info = self.DomainInfo({"domain_id": domain_id})
+            record_list = self.RecordList({"domain_id": domain_id})
             chunks.append(self.gen_backup(domain_info, record_list))
-        backup_file = "\n\n".join(chunks)
+
         if len(domain_ids) == 1:
-            backup_file_name = u"域名记录备份_%s.txt" % domain_info['domain']['name']
+            backup_file_name = u"域名记录备份_%s.json" % domain_info['domain']['name']
         else:
-            backup_file_name = u"域名记录备份_共%d个域名.txt" % len(domain_ids)
-        self.set_header ('Content-Type', 'text/plain')
+            backup_file_name = u"域名记录备份_共%d个域名.json" % len(domain_ids)
+
+        self.set_header ('Content-Type', 'text/json')
         self.set_header ('Content-Disposition', 
                           'attachment; filename='+backup_file_name)
-        self.finish(backup_file.encode("utf-8"))
+        self.finish(json.dumps(chunks, sort_keys=True, indent=4))
 
     def post(self):
-        chunk = self.request.files['backup'][0]['body'].strip('\n')
-        for i in chunk.split("\n\n"):
-            r = i.split("\n")
-            for record in r[3:]:
-                (name, type_, line, value, mx, ttl, remark) = record.split("\t")
-                kwargs = dict(
-                    domain_id = r[1],
-                    sub_domain = name,
-                    record_type = type_,
-                    record_line = line,
-                    value = value,
-                    mx = mx,
-                    ttl = ttl,
-                )
-                self.DAPI.RecordModify(kwargs)
-                self.DAPI.RecordRemark(r[1], remark)
-        self.redirect("/")
-
+        chunk = json.loads(self.request.files['backup'][0]['body'].strip('\n'))
+        # First: Delete current records
+        for domain in chunk:
+            record_list = self.RecordList({"domain_id": domain['id']})
+            print "In POST\n",record_list['records'],"\n"
+            for r in record_list['records']:
+                self.RecordRemove(dict(
+                    domain_id = domain['id'],
+                    record_id = r['id'],
+                ))
+        # Second: Create records
+        for domain in chunk:
+            for record in domain['records']:
+                self.RecordCreate(dict(
+                    domain_id = domain['id'],
+                    sub_domain = record['name'],
+                    record_type = record['type'],
+                    record_line = record['line'],
+                    value = record['value'],
+                    mx = record['mx'],
+                    ttl = record['ttl'],
+                ))
+        self.finish()
 
     def gen_backup(self, domain_info, record_list):
-        BACKUP_VALUE_CN = [u"主机", u"类型", u"线路", u"记录值", u"MX优先级", u"TTL", u"备注"]
-        BACKUP_VALUE_EN = [u'name', u'type', u'line', u'value', u'mx', u'ttl', u'remark']
-        chunk_header = "\n".join([domain_info['domain']['name'], 
-                                  domain_info['domain']['id'],
-                                  "|".join(BACKUP_VALUE_CN)])
-        record_item_list = []
+        records = []
         for r in record_list['records']:
-            record_item_list.append("\t".join([r[i] for i in BACKUP_VALUE_EN]))
-        chunk_records = "\n".join(record_item_list)
-        return "\n".join([chunk_header, chunk_records])
-
-    def parse_backup_file(self, chunk):
-        pass
+            records.append(dict(
+                #id = r['id'],
+                name = r['name'],
+                type = r['type'],
+                line = r['line'],
+                value = r['value'],
+                mx = r['mx'],
+                ttl = r['ttl'],
+                remark = r['remark'],
+                enabled = r['enabled'],
+            ))
+        
+        return dict(
+            name = domain_info['domain']['name'],
+            id = domain_info['domain']['id'],
+            records = records,
+        )
 
 
 class LoginHandler(BaseHandler):
@@ -96,8 +150,8 @@ class LoginHandler(BaseHandler):
     def post(self):
         email = self.get_argument("email", None)
         password = self.get_argument("password", None)
-        api = DNSPodAPI(email, password)
-        resp = api.UserDetail()
+        resp = self.UserDetail({"login_email": email, "login_password":password})
+        print resp
         if resp['status']['code'] == "1":
             session = hashlib.sha256(email+password).hexdigest()
             if not db.user.find_one({"email":email, "password":password}):
@@ -110,13 +164,14 @@ class LoginHandler(BaseHandler):
                             value=session)
             self.redirect("/")
         else:
-            self.render("signin.html", error=(resp['status']['message']))
+            self.render("signin.html", error=resp['status']['message'])
+
 
 class LogoutHandler(BaseHandler):
     def get(self):
         try:
             member = self.get_current_user()
-            db.user.remove({"email": member[0]})
+            db.user.remove({"email": member['login_email']})
             self.clear_all_cookies()
             self.redirect("/login")
         except:
