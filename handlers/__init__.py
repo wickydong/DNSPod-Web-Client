@@ -4,7 +4,6 @@
 import json
 import hashlib
 import pymongo
-import StringIO
 import logging
 import tornado.web
 import requests

@@ -10,11 +10,10 @@ import tornado.web
 import tornado.ioloop
 import tornado.httpserver
 from tornado.options import define, options
-
 from handlers import handlers
 
-options['log_file_prefix'].set("dns.log")
-define("port", default=8000, help="run on the given port", type=int)
+options['log_file_prefix'].set("dnstoy.log")
+define("port", default=8003, help="run on the given port", type=int)
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 
@@ -26,7 +25,6 @@ class App(tornado.web.Application):
             login_url = "/login",
             debug=True
         )
-
         tornado.web.Application.__init__(self, handlers,**SETTINGS)
 
 
