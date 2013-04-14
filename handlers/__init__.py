@@ -146,7 +146,6 @@ class LoginHandler(BaseHandler):
         email = self.get_argument("email", None)
         password = self.get_argument("password", None)
         resp = self.UserDetail({"login_email": email, "login_password":password})
-        print resp
         if resp['status']['code'] == "1":
             session = hashlib.sha256(email+password).hexdigest()
             if not db.user.find_one({"email":email, "password":password}):
