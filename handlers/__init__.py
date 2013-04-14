@@ -57,7 +57,6 @@ class BaseHandler(tornado.web.RequestHandler):
         r = self.requests.post("https://dnsapi.cn/Record.Remove", data=self.data)
         return r.json()    
 
-    @tornado.web.asynchronous
     def RecordCreate(self, kwargs):
         self.data.update(self.get_current_user())
         self.data.update(kwargs)
